@@ -53,6 +53,11 @@ function generateKeys() {
     }
 
     const n = p * q;
+    if (n <= 128) {
+        alert("Pilih bilangan prima sehingga modulus lebih besar dari 128.");
+        return;
+    }
+
     const m = (p - 1) * (q - 1);
 
     // Cari e
@@ -113,9 +118,10 @@ function decrypt() {
         .split(',')
         .map(num => {
             const charCode = modPow(parseInt(num), d, n);
+            console.log(charCode);
             return String.fromCharCode(charCode);
         })
         .join('');
 
-    document.getElementById('decrypted-text').value = decryptedText;
+        document.getElementById('decrypted-text').value = decryptedText;
 }

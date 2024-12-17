@@ -20,23 +20,11 @@ function gcd(a, b) {
     return a;
 }
 
-// Fungsi pangkat modulo untuk mengatasi bilangan besar
-function modPow(base, exponent, modulus) {
-    if (modulus === 1) {
-        return 0;
-    }
-    let result = 1;
-    base = base % modulus;
-
-    while (exponent > 0) {=
-        if (exponent % 2 === 1) {
-            result = (result * base) % modulus;
-        }
-        exponent = Math.floor(exponent / 2);
-        base = (base * base) % modulus;
-    }
-
-    return result;
+// Fungsi pangkat langsung (tidak direkomendasikan untuk bilangan besar)
+function directPow(base, exponent, modulus) {
+    // Gunakan BigInt untuk menangani bilangan besar
+    const result = BigInt(base) ** BigInt(exponent) % BigInt(modulus);
+    return Number(result);
 }
 
 let publicKey = null;
@@ -79,7 +67,6 @@ function generateKeys() {
     privateKey = { d, n };
 
     document.getElementById('publicKey').innerHTML = `(${e}, ${n})`;
-
     document.getElementById('privateKey').innerHTML = `(${d}, ${n})`;
 }
 
@@ -97,7 +84,7 @@ function encrypt() {
         .split('')
         .map(char => {
             const charCode = char.charCodeAt(0);
-            return modPow(charCode, e, n);
+            return directPow(charCode, e, n);
         })
         .join(',');
 
@@ -117,11 +104,10 @@ function decrypt() {
     const decryptedText = manualCipherText
         .split(',')
         .map(num => {
-            const charCode = modPow(parseInt(num), d, n);
-            console.log(charCode);
+            const charCode = directPow(parseInt(num), d, n);
             return String.fromCharCode(charCode);
         })
         .join('');
 
-        document.getElementById('decrypted-text').value = decryptedText;
+    document.getElementById('decrypted-text').value = decryptedText;
 }

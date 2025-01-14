@@ -1,7 +1,11 @@
 function isPrime(num) {
-    if (num <= 1) return false;
+    if (num <= 1) {
+        return false;
+    }
     for (let i = 2; i <= Math.sqrt(num); i++) {
-        if (num % i === 0) return false;
+        if (num % i === 0) {
+            return false;
+        }
     }
     return true;
 }
@@ -33,9 +37,21 @@ function findPossibleE(m) {
     const possibleE = [];
     for (let e = 2; e < m; e++) {
         if (gcd(e, m) === 1) {
-            possibleE.push(e);
-            if (possibleE.length >= 10) {
-                break;
+            let d = 1;
+            while ((d * e) % m !== 1 || d === e) {
+                d++;
+
+                if (d >= m) {
+                    d = -1;
+                    break;
+                }
+            }
+
+            if (d !== -1) {
+                possibleE.push(e);
+                if (possibleE.length >= 10) {
+                    break;
+                }
             }
         }
     }
@@ -56,19 +72,39 @@ let publicKey = null;
 let privateKey = null;
 
 function generateKeys() {
-    const p = parseInt(document.getElementById('p').value);
-    const q = parseInt(document.getElementById('q').value);
+    let p = parseInt(document.getElementById('p').value);
+    let q = parseInt(document.getElementById('q').value);
+
+    if (isNaN(p) || isNaN(q)) {
+        alert("Masukan bilangan p dan q terlebih dahulu...");
+        return;
+    } 
     
     if (!isPrime(p) || !isPrime(q)) {
         alert('Kedua bilangan harus prima!');
         return;
     }
     
-    const n = p * q;
-    const m = (p - 1) * (q - 1);
+    if (p === q) {
+        alert('Bilangan prima tidak boleh sama!');
+        return;
+    }
     
-    const possibleE = findPossibleE(m);
-    const eSelect = document.getElementById('e-select');
+    let n = p * q;
+    if (n <= 128) {
+        alert("Pilih bilangan prima sehingga modulus lebih besar dari 128.");
+        return;
+    }
+    
+    let m = (p - 1) * (q - 1);
+    let possibleE = findPossibleE(m);
+    
+    if (possibleE.length === 0) {
+        alert('Tidak dapat menemukan nilai e yang valid. Silakan coba nilai p dan q yang berbeda.');
+        return;
+    }
+    
+    let eSelect = document.getElementById('e-select');
     eSelect.innerHTML = possibleE.map(e => 
         `<option value="${e}">${e}</option>`
     ).join('');
@@ -84,8 +120,13 @@ function finalizeKeys() {
     const m = (p - 1) * (q - 1);
     
     let d = 1;
-    while ((d * e) % m !== 1) {
+    while ((d * e) % m !== 1 || d === e) {
         d++;
+
+        if (d >= m) {
+            alert('Tidak dapat menemukan kunci private yang valid. Silakan pilih nilai e yang berbeda.');
+            return;
+        }
     }
     
     publicKey = { e, n };
@@ -96,10 +137,6 @@ function finalizeKeys() {
 }
 
 function encrypt() {
-    if (!publicKey) {
-        alert('Harap hasilkan kunci terlebih dahulu');
-        return;
-    }
     
     const plaintext = document.getElementById('plaintext').value;
     const { e, n } = publicKey;
